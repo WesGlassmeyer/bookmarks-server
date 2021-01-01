@@ -1,16 +1,21 @@
 const express = require("express");
 const { v4: uuid } = require("uuid");
-const logger = require("./logger");
-const { bookmarks } = require("./store");
+const logger = require("../logger");
+const { bookmarks } = require("../store");
 const { isWebUri } = require("valid-url");
+const BookmarksService = require("./bookmarks-service");
 
 const bookmarksRouter = express.Router();
 const bodyParser = express.json();
 
 bookmarksRouter
   .route("/bookmarks")
-  .get((req, res) => {
-    res.json(bookmarks);
+  .get((req, res, next) => {
+    BookmarksService.getAllBookmarks(req.app.get("db"))
+      .then((bookmarks) => {
+        res.json(bookmarks);
+      })
+      .catch(next);
   })
   .post(bodyParser, (req, res) => {
     const { title, url, description, rating } = req.body;
@@ -64,16 +69,17 @@ bookmarksRouter
 
 bookmarksRouter
   .route("/bookmarks/:id")
-  .get((req, res) => {
+  .get((req, res, next) => {
     const { id } = req.params;
-    const bookmark = bookmarks.find((b) => b.id == id);
-
-    if (!bookmark) {
-      logger.error(`Bookmark with id ${id} not found.`);
-      return res.status(404).send("Bookmark Not Found");
-    }
-
-    res.json(bookmark);
+    BookmarksService.getById(req.app.get("db"), id)
+      .then((bookmark) => {
+        if (!bookmark) {
+          logger.error(`Bookmark with id ${id} not found.`);
+          return res.status(404).send("Bookmark Not Found");
+        }
+        res.json(bookmark);
+      })
+      .catch(next);
   })
   .delete((req, res) => {
     const { id } = req.params;
