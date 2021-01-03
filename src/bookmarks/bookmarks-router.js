@@ -82,7 +82,8 @@ bookmarksRouter
             .status(404)
             .send({ error: { message: `Bookmark Not Found` } });
         }
-        res.json(bookmark);
+        res.bookmark = bookmark;
+        next();
       })
       .catch(next);
   })
