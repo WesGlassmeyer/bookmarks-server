@@ -296,7 +296,7 @@ describe("Bookmark Endpoints", function () {
         return supertest(app)
           .delete(`/bookmarks/${idToRemove}`)
           .set("Authorization", `Bearer ${process.env.API_TOKEN}`)
-          .expect(200)
+          .expect(204)
           .then(() =>
             supertest(app)
               .get(`/bookmarks`)
